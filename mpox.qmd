@@ -85,27 +85,21 @@ return(list(c(dS, dEs, dEc, dEa, dI, dR))) }) }
 
 # Set parameters and initial states
 
-N= 1 (Total Population)
-
-I0 = 0.01 (Initial Infected)
-
-R0 = 0 (Initial removed)
-
 ```{r parameters and initia states}
 
-N <- 1 # Total population
-Es0 <- 0.2 
-Ec0 <- 0.1
-Ea0 <- 0.05    
-I0 <- 0.01 # Initial number of infected individuals 
+N <- 109276265 # Total population
+Es0 <- 0.01*N
+Ec0 <- 0.07*N
+Ea0 <- 0.02*N   
+I0 <- 23 # Initial number of infected individuals 
 R0 <- 0 # Initial number of recovered individuals 
 S0 <- N - I0 - R0 - Es0 - Ec0 - Ea0 # Initial number of susceptible individuals 
-beta1 <- 0.05 # Transmission rate by sexual contact
-beta2 <- 0.01  # Transmission rate by direct contact
-beta3 <- 0.005  # Transmission rate by airborne
-omega <- 0.08   # Infected rate from different transmission routes
-theta <- 0.7    # Recovery rate of infected individuals due to all other unreported causes
-lambda <- 0.2  # death rate due the mpox 
+beta1 <- 0.01 # Transmission rate by sexual contact
+beta2 <- 0.4  # Transmission rate by direct contact
+beta3 <- 0.02  # Transmission rate by airborne
+omega <- 0.001   # Infected rate from different transmission routes
+theta <- 1/2    # Recovery rate of infected individuals due to all other unreported causes
+lambda <- 1/I0  # death rate due the mpox i.e total death by total population 
 ```
 
 # Intial states
@@ -134,11 +128,11 @@ parameters <- c(N = N,
 # Time 
 
 ```{r}
-first_case_date <- ymd("2022-01-09")  # Date of first case
+first_case_date <- ymd("2024-01-07")  # Date of first case
 end_date <- ymd("2024-09-24")  # End date
 
 duration <- as.numeric(end_date - first_case_date)
-duration <- duration
+duration <- duration/52
 
 times <- seq(0, duration, by = 1)
 ```
@@ -157,23 +151,27 @@ solution <-  lsoda(
 df <- as.data.frame(solution) #convert to dataframe
 ```
 
+# 
+
 # Plot
 
 ```{r graph, echo=TRUE}
-result_long <- pivot_longer(df, cols = -time, names_to = "Compartment", values_to = "Population")
+result_long <- pivot_longer(df, cols = -time , names_to = "Compartment", values_to = "Population")
 
-ggplot(result_long, aes(x = time, 
+p=ggplot(result_long, aes(x = time, 
                         y = Population, 
                         color = Compartment)) +
   geom_line() +
-  labs(x = "Time (days)", y = "Number of individuals",
+  labs(x = "Time (Weeks)", y = "Number of individuals",
        title = "SEIR Model for MPOX in DRC",
        caption = "Figure 2: Dynamics of MPOX transmission in DRC") +
-  scale_color_manual(values = c("S" = "blue", 
-                                "Es" = "black",
+  scale_color_manual(values = c( "S" = "blue",
+                                 "Es" = "black",
                                 "Ec" = "grey",
-                                "Ea" = "brown",
+                                "Ea" = "yellow",
                                 "I" = "red", "R" = "green")) +
   theme_minimal()+
     theme(plot.caption = element_text(hjust = 0, size = 10, face = "italic"))
+
+p
 ```
