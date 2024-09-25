@@ -21,7 +21,7 @@ library(tidyverse) # loads other packages dplyr, ggplot2
 
 # Introduction
 
-Let
+Lets
 
 -   S be Susceptible Observed Population
 
@@ -47,6 +47,22 @@ Let
 
 -   Homogeneous mixing
 
+# Equations
+
+-   Susceptible (S): The rate of change of susceptible individuals is given by:
+
+    $\frac{dS}{dt} = -\beta SI/N$
+
+-   Expose ()
+
+-   Infectious (I): The rate of change of infectious individuals is given by:
+
+    $\frac{dI}{dt} = \beta SI - (V1+V2)I$
+
+-   Removed (R): The rate of change of recovered individuals is given by:
+
+    $\frac{dR}{dt} = (V1 + V2)I$
+
 # Define the SEIR model
 
 ```{r sir_model, echo=FALSE}
@@ -56,7 +72,7 @@ dS <- -(beta1 + beta2+ beta3) * S * I / N
 dEs <- beta1*S*I/N - omega*Es
 dEc <- beta2*S*I/N - omega*Ec
 dEa <- beta3*S*I/N - omega*Ea
-dI <- beta * S * I / N - (v1 + v2) * I 
-dR <- (v1 + v2) * I 
+dI <- (beta1 + beta2+ beta3) * S * I - theta*I 
+dR <- theta*I 
 return(list(c(dS, dI, dR))) }) }
 ```
