@@ -1,0 +1,62 @@
+---
+title: MPOX MODELLING
+author: Group 6
+---
+
+```{r setup, echo=FALSE }
+knitr::opts_chunk$set(
+  fig.cap = '',
+  fig.align = "center", 
+  message = FALSE,
+  warning = FALSE,
+  cache = FALSE,
+  echo = TRUE
+)
+```
+
+```{r libraries loading, echo=TRUE}
+library(deSolve)
+library(tidyverse) # loads other packages dplyr, ggplot2
+```
+
+# Introduction
+
+Let
+
+-   S be Susceptible Observed Population
+
+-   Es be Exposed observed Population through sexual contact
+
+-   Ec be Exposed Observed Population through contacts
+
+-   Ea be Exposed Observed Population through airborne
+
+-   R be Recovered observed Population
+
+![Figure 1: SEIR Model with Three Transmission Routes](images/clipboard-3807322046.png){fig-align="center"}
+
+# Assumptions
+
+-   No asymptomatic Population
+
+-   full immunity after recovery
+
+-   Same rate of infection
+
+-   constant population except death due to mpox
+
+-   Homogeneous mixing
+
+# Define the SEIR model
+
+```{r sir_model, echo=FALSE}
+sir_model <- function(time, state, parameters) { 
+with(as.list(c(state, parameters)), { 
+dS <- -(beta1 + beta2+ beta3) * S * I / N 
+dEs <- beta1*S*I/N - omega*Es
+dEc <- beta2*S*I/N - omega*Ec
+dEa <- beta3*S*I/N - omega*Ea
+dI <- beta * S * I / N - (v1 + v2) * I 
+dR <- (v1 + v2) * I 
+return(list(c(dS, dI, dR))) }) }
+```
