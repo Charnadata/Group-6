@@ -51,28 +51,129 @@ Lets
 
 -   Susceptible (S): The rate of change of susceptible individuals is given by:
 
-    $\frac{dS}{dt} = -\beta SI/N$
+    $\frac{dS}{dt} = -(\beta1 +\beta2 +\beta3) SI/N$
 
--   Expose ()
+-   Expose
+
+    -   $\frac{dEs}{dt} = \beta1 SI - \omega Es$
+
+-   $\frac{dEc}{dt} = \beta2 SI - \omega Ec$
+
+-   $\frac{dEa}{dt} = \beta3 SI - \omega Ea$
 
 -   Infectious (I): The rate of change of infectious individuals is given by:
 
-    $\frac{dI}{dt} = \beta SI - (V1+V2)I$
+    $\frac{dI}{dt} = -(\beta1 + \beta2 + \beta3) SI - \lambda I -\theta I$
 
 -   Removed (R): The rate of change of recovered individuals is given by:
 
-    $\frac{dR}{dt} = (V1 + V2)I$
+    $\frac{dR}{dt} = \theta I$
 
 # Define the SEIR model
 
 ```{r sir_model, echo=FALSE}
-sir_model <- function(time, state, parameters) { 
+seir_model <- function(time, state, parameters) { 
 with(as.list(c(state, parameters)), { 
 dS <- -(beta1 + beta2+ beta3) * S * I / N 
 dEs <- beta1*S*I/N - omega*Es
 dEc <- beta2*S*I/N - omega*Ec
 dEa <- beta3*S*I/N - omega*Ea
-dI <- (beta1 + beta2+ beta3) * S * I - theta*I 
+dI <- (beta1 + beta2+ beta3) * S * I - lambda*I - theta*I 
 dR <- theta*I 
-return(list(c(dS, dI, dR))) }) }
+return(list(c(dS, dEs, dEc, dEa, dI, dR))) }) }
+```
+
+# Set parameters and initial states
+
+N= 1 (Total Population)
+
+I0 = 0.01 (Initial Infected)
+
+R0 = 0 (Initial removed)
+
+```{r parameters and initia states}
+
+N <- 1 # Total population
+Es0 <- 0.2 
+Ec0 <- 0.1
+Ea0 <- 0.05    
+I0 <- 0.01 # Initial number of infected individuals 
+R0 <- 0 # Initial number of recovered individuals 
+S0 <- N - I0 - R0 - Es0 - Ec0 - Ea0 # Initial number of susceptible individuals 
+beta1 <- 0.05 # Transmission rate by sexual contact
+beta2 <- 0.01  # Transmission rate by direct contact
+beta3 <- 0.005  # Transmission rate by airborne
+omega <- 0.08   # Infected rate from different transmission routes
+theta <- 0.7    # Recovery rate of infected individuals due to all other unreported causes
+lambda <- 0.2  # death rate due the mpox 
+```
+
+# Intial states
+
+```{r init_states, echo=FALSE}
+initial_state <- c(S = S0,
+                   Es = Es0,
+                   Ec= Ec0,
+                   Ea= Ea0,
+                   I = I0, 
+                   R = R0)
+```
+
+# Parameters
+
+```{r parameters, echo=FALSE}
+parameters <- c(N = N, 
+                beta1 = beta1,
+                beta2=beta2,
+                beta3=beta3,
+                omega=omega,
+                theta=theta,
+                lambda=lambda)
+```
+
+# Time 
+
+```{r}
+first_case_date <- ymd("2022-01-09")  # Date of first case
+end_date <- ymd("2024-09-24")  # End date
+
+duration <- as.numeric(end_date - first_case_date)
+duration <- duration
+
+times <- seq(0, duration, by = 1)
+```
+
+# solve model
+
+```{r model solution}
+
+solution <-  lsoda(
+  y=initial_state,
+  time=times,
+  parms = parameters,
+  func = seir_model
+)
+
+df <- as.data.frame(solution) #convert to dataframe
+```
+
+# Plot
+
+```{r graph, echo=FALSE}
+result_long <- pivot_longer(df, cols = -time, names_to = "Compartment", values_to = "Population")
+
+ggplot(result_long, aes(x = time, 
+                        y = Population, 
+                        color = Compartment)) +
+  geom_line() +
+  labs(x = "Time (days)", y = "Number of individuals",
+       title = "SEIR Model for MPOX in DRC",
+       caption = "Figure 2: Dynamics of MPOX transmission in DRC") +
+  scale_color_manual(values = c("S" = "blue", 
+                                "Es" = "black",
+                                "Ec" = "grey",
+                                "Ea" = "brown",
+                                "I" = "red", "R" = "green")) +
+  theme_minimal()+
+    theme(plot.caption = element_text(hjust = 0, size = 10, face = "italic"))
 ```
