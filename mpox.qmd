@@ -33,7 +33,7 @@ Lets
 
 -   R be Recovered observed Population
 
-![Figure 1: SEIR Model with Three Transmission Routes](images/clipboard-3807322046.png){fig-align="center"}
+![Figure 1: SEIR Model](images/clipboard-2237514110.png)
 
 # Assumptions
 
@@ -143,7 +143,7 @@ duration <- duration
 times <- seq(0, duration, by = 1)
 ```
 
-# solve model
+# Solve model
 
 ```{r model solution}
 
@@ -159,7 +159,7 @@ df <- as.data.frame(solution) #convert to dataframe
 
 # Plot
 
-```{r graph, echo=FALSE}
+```{r graph, echo=TRUE}
 result_long <- pivot_longer(df, cols = -time, names_to = "Compartment", values_to = "Population")
 
 ggplot(result_long, aes(x = time, 
