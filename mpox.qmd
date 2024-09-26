@@ -78,7 +78,7 @@ dS <- -(beta1 + beta2+ beta3) * S * I / N
 dEs <- beta1*S*I/N - omega*Es
 dEc <- beta2*S*I/N - omega*Ec
 dEa <- beta3*S*I/N - omega*Ea
-dI <- (beta1 + beta2+ beta3) * S * I - lambda*I - theta*I 
+dI <- (omega*Es + omega*Ec + omega*Ea) - theta*I 
 dR <- theta*I 
 return(list(c(dS, dEs, dEc, dEa, dI, dR))) }) }
 ```
@@ -99,10 +99,10 @@ beta2 <- 0.4  # Transmission rate by direct contact
 beta3 <- 0.02  # Transmission rate by airborne
 omega <- 0.001   # Infected rate from different transmission routes
 theta <- 1/2    # Recovery rate of infected individuals due to all other unreported causes
-lambda <- 1/I0  # death rate due the mpox i.e total death by total population 
+#lambda <- 1/I0  # death rate due the mpox i.e total death by total population 
 ```
 
-# Intial states
+# Initial states
 
 ```{r init_states, echo=FALSE}
 initial_state <- c(S = S0,
@@ -121,8 +121,8 @@ parameters <- c(N = N,
                 beta2=beta2,
                 beta3=beta3,
                 omega=omega,
-                theta=theta,
-                lambda=lambda)
+                theta=theta)
+                #lambda=lambda)
 ```
 
 # Time 
