@@ -1,0 +1,246 @@
+---
+title: MPOX MODELLING
+author: Group 6
+---
+
+```{r setup, echo=FALSE }
+knitr::opts_chunk$set(
+  fig.cap = '',
+  fig.align = "center", 
+  message = FALSE,
+  warning = FALSE,
+  cache = FALSE,
+  echo = TRUE
+)
+```
+
+```{r libraries loading, echo=TRUE}
+library(deSolve)
+library(tidyverse) # loads other packages dplyr, ggplot2
+```
+
+# Introduction
+
+Lets
+
+-   S_y and S_a be Susceptible Observed Population, young and adult respectively
+
+-   E_as be Exposed observed Population through sexual contact, in the adult population
+
+-   E_yc and E_ac be Exposed Observed Population through contacts, young and adult respectively
+
+-   E_ya and E_aa be Exposed Observed Population through airborne, young and adult respectively
+
+-   R_y and R_a be Recovered observed Population
+
+![Figure 1: SEIR Model](images/clipboard-2237514110.png)
+
+# Assumptions
+
+-   No asymptomatic Population
+
+-   full immunity after recovery
+
+-   Same rate of infection
+
+-   constant population except death due to mpox
+
+-   Homogeneous mixing
+
+# Equations
+
+-   Susceptible (S): The rate of change of susceptible individuals is given by:
+
+    $\frac{dS}{dt} = -(\beta1 +\beta2 +\beta3) SI/N$
+
+-   Expose
+
+    -   $\frac{dEs}{dt} = \beta1 SI - \omega Es$
+
+-   $\frac{dEc}{dt} = \beta2 SI - \omega Ec$
+
+-   $\frac{dEa}{dt} = \beta3 SI - \omega Ea$
+
+-   Infectious (I): The rate of change of infectious individuals is given by:
+
+    $\frac{dI}{dt} = -(\beta1 + \beta2 + \beta3) SI - \lambda I -\theta I$
+
+-   Removed (R): The rate of change of recovered individuals is given by:
+
+    $\frac{dR}{dt} = \theta I$
+
+# Define the SEIR model with age structure
+
+
+```{r sir_model, echo=FALSE}
+seir_model <- function(time, state, parameters) { 
+with(as.list(c(state, parameters)), { 
+dS_y <- -(beta_yc + beta_ya) * S_y * (c_yy*(I_y/N_y) + c_ya*(I_a/N_a)) 
+dE_yc <- beta_yc * S_y * (c_yy*(I_y/N_y) + c_ya*(I_a/N_a)) - omega * E_yc
+dE_ya <- beta_ya * S_y * (c_yy*(I_y/N_y) + c_ya*(I_a/N_a)) - omega * E_ya
+dI_y <-  omega * (E_yc + E_ya ) - lambda_y * I_y - theta * I_y
+dR_y <- theta * I_y 
+
+dS_a <- -(beta_ac + beta_aa) * S_a * (c_ya*(I_y/N_y) + c_aa*(I_a/N_a)) - beta_as * S_a * (I_a / N_a) 
+dE_ac <- beta_ac * S_a * (c_ya*(I_y/N_y) + c_aa*(I_a/N_a)) - omega * E_ac
+dE_aa <- beta_aa * S_a * (c_ya*(I_y/N_y) + c_aa*(I_a/N_a)) - omega * E_aa
+dE_as <- beta_as * S_a * c_aa * (I_a/N_a) - omega * E_as
+dI_a <-  omega * (E_ac + E_aa + E_as) - lambda_a * I_a - theta * I_a
+dR_a <- theta * I_a 
+
+return(list(c(dS_y, dE_yc, dE_ya, dI_y, dR_y, dS_a, dE_ac, dE_aa, dE_as, dI_a, dR_a))) }) }
+```
+
+# Set parameters and initial states
+
+```{r parameters and initial states}
+
+N_y <- 44784600 * 0.4985 # Total young population
+N_a <- 44784600 * (1 - 0.4985) # Total adult population
+
+
+E_yc0 <- 0
+E_ya0 <- 0
+I_y0 <- 23 * 0.4985
+R_y0 <- 0
+S_y0 <- N_y - E_yc0 - E_ya0 - I_y0 - R_y0
+
+
+E_ac0 <- 0
+E_aa0 <- 0
+E_as0 <- 0
+I_a0 <-  23 * (1 - 0.4985)
+R_a0 <- 0
+S_a0 <-  N_a - E_ac0 - E_aa0 - E_as0 - I_a0 - R_a0
+
+
+beta_yc <- 0.3 # Transmission rate by sexual contact
+beta_ya <- 0.1 # Transmission rate by sexual contact
+beta_ac <- 0.2 # Transmission rate by sexual contact
+beta_aa <- 0.1 # Transmission rate by sexual contact
+beta_as <- 0.5 # Transmission rate by sexual contact
+
+c_ya <- 1
+c_aa <- 0.5
+c_yy <- 2
+    
+omega <- 1/7   # Infected rate from different transmission routes
+theta <- 1/14    # Recovery rate of infected individuals due to all other unreported causes
+lambda_y <- 1/I_y0  # death rate due the mpox i.e total death by total population 
+lambda_a <- 1/I_a0  # death rate due the mpox i.e total death by total population 
+```
+
+# Intial states
+
+```{r init_states, echo=FALSE}
+initial_state <- c(S_y = S_y0,
+                   E_yc = E_yc0,
+                   E_ya = E_ya0,
+                   I_y = I_y0,
+                   R_y = R_y0, 
+                   S_a = S_a0,
+                   E_ac = E_ac0,
+                   E_aa = E_aa0,
+                   E_as = E_as0,
+                   I_a = I_a0,
+                   R_a = R_a0)
+```
+
+
+# Parameters
+
+```{r parameters, echo=FALSE}
+parameters <- c(N_y = N_y, 
+                N_a = N_a, 
+                c_ya = c_ya,
+                c_aa = c_aa,
+                c_yy = c_yy,
+                beta_yc = beta_yc,
+                beta_ya = beta_ya,
+                beta_ac = beta_ac,
+                beta_aa = beta_aa,
+                beta_aa = beta_as,
+                omega=omega,
+                theta=theta,
+                lambda_y=lambda_y,
+                lambda_a=lambda_a)
+```
+
+# Time 
+
+```{r}
+first_case_date <- ymd("2024-01-07")  # Date of first case
+end_date <- ymd("2024-09-24")  # End date
+
+duration <- as.numeric(end_date - first_case_date)
+duration <- duration
+
+times <- seq(0, duration, by = 1)
+```
+
+# Solve model
+
+```{r model solution}
+
+solution <-  lsoda(
+  y=initial_state,
+  time=times,
+  parms = parameters,
+  func = seir_model
+)
+
+df <- as.data.frame(solution) #convert to dataframe
+```
+
+# 
+
+# Plot for young
+
+```{r graph young, echo=TRUE}
+result_long <- pivot_longer(df, cols = -c(time, S_a, E_ac, E_aa, E_as, I_a, R_a) , names_to = "Compartment", values_to = "Population")
+
+p=ggplot(result_long, aes(x = time, 
+                        y = Population, 
+                        color = Compartment)) +
+  geom_line() +
+  labs(x = "Time (Weeks)", y = "Number of individuals",
+       title = "SEIR Model for MPOX in DRC",
+       caption = "Figure 2: Dynamics of MPOX transmission in DRC") +
+  scale_color_manual(values = c( "S_y" = "blue",
+                                 "E_yc" = "black",
+                                 "E_ya" = "grey",
+                                 "I_y" = "yellow",
+                                 "R_y" = "red", "R" = "green")) +
+  theme_minimal()+
+    theme(plot.caption = element_text(hjust = 0, size = 10, face = "italic"))
+
+p
+```
+# Plot for adults
+
+```{r graph adult, echo=TRUE}
+result_long <- pivot_longer(df, cols = -c(time, S_y, E_yc, E_ya, I_y, R_y) , names_to = "Compartment", values_to = "Population")
+
+a=ggplot(result_long, aes(x = time, 
+                        y = Population, 
+                        color = Compartment)) +
+  geom_line() +
+  labs(x = "Time (Weeks)", y = "Number of individuals",
+       title = "SEIR Model for MPOX in DRC",
+       caption = "Figure 2: Dynamics of MPOX transmission in DRC") +
+  scale_color_manual(values = c( "S_a" = "blue",
+                                 "E_ac" = "black",
+                                 "E_aa" = "grey",
+                                 "E_as" = "pink",
+                                 "I_a" = "yellow",
+                                 "R_a" = "red", "R" = "green")) +
+  theme_minimal()+
+    theme(plot.caption = element_text(hjust = 0, size = 10, face = "italic"))
+
+a
+```
+```
+
+# Plotting data
+
+
