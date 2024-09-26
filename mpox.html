@@ -185,27 +185,24 @@ window.Quarto = {
 </section>
 <section id="set-parameters-and-initial-states" class="level1">
 <h1>Set parameters and initial states</h1>
-<p>N= 1 (Total Population)</p>
-<p>I0 = 0.01 (Initial Infected)</p>
-<p>R0 = 0 (Initial removed)</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="co"># Total population</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>Es0 <span class="ot">&lt;-</span> <span class="fl">0.2</span> </span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>Ec0 <span class="ot">&lt;-</span> <span class="fl">0.1</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>Ea0 <span class="ot">&lt;-</span> <span class="fl">0.05</span>    </span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>I0 <span class="ot">&lt;-</span> <span class="fl">0.01</span> <span class="co"># Initial number of infected individuals </span></span>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">109276265</span> <span class="co"># Total population</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>Es0 <span class="ot">&lt;-</span> <span class="fl">0.01</span><span class="sc">*</span>N</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>Ec0 <span class="ot">&lt;-</span> <span class="fl">0.07</span><span class="sc">*</span>N</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>Ea0 <span class="ot">&lt;-</span> <span class="fl">0.02</span><span class="sc">*</span>N   </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>I0 <span class="ot">&lt;-</span> <span class="dv">23</span> <span class="co"># Initial number of infected individuals </span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>R0 <span class="ot">&lt;-</span> <span class="dv">0</span> <span class="co"># Initial number of recovered individuals </span></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>S0 <span class="ot">&lt;-</span> N <span class="sc">-</span> I0 <span class="sc">-</span> R0 <span class="sc">-</span> Es0 <span class="sc">-</span> Ec0 <span class="sc">-</span> Ea0 <span class="co"># Initial number of susceptible individuals </span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>beta1 <span class="ot">&lt;-</span> <span class="fl">0.05</span> <span class="co"># Transmission rate by sexual contact</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>beta2 <span class="ot">&lt;-</span> <span class="fl">0.01</span>  <span class="co"># Transmission rate by direct contact</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>beta3 <span class="ot">&lt;-</span> <span class="fl">0.005</span>  <span class="co"># Transmission rate by airborne</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>omega <span class="ot">&lt;-</span> <span class="fl">0.08</span>   <span class="co"># Infected rate from different transmission routes</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>theta <span class="ot">&lt;-</span> <span class="fl">0.7</span>    <span class="co"># Recovery rate of infected individuals due to all other unreported causes</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>lambda <span class="ot">&lt;-</span> <span class="fl">0.2</span>  <span class="co"># death rate due the mpox </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>beta1 <span class="ot">&lt;-</span> <span class="fl">0.01</span> <span class="co"># Transmission rate by sexual contact</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>beta2 <span class="ot">&lt;-</span> <span class="fl">0.4</span>  <span class="co"># Transmission rate by direct contact</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>beta3 <span class="ot">&lt;-</span> <span class="fl">0.02</span>  <span class="co"># Transmission rate by airborne</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>omega <span class="ot">&lt;-</span> <span class="fl">0.001</span>   <span class="co"># Infected rate from different transmission routes</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>theta <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>    <span class="co"># Recovery rate of infected individuals due to all other unreported causes</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">#lambda &lt;- 1/I0  # death rate due the mpox i.e total death by total population </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="intial-states" class="level1">
-<h1>Intial states</h1>
+<section id="initial-states" class="level1">
+<h1>Initial states</h1>
 </section>
 <section id="parameters" class="level1">
 <h1>Parameters</h1>
@@ -213,17 +210,17 @@ window.Quarto = {
 <section id="time" class="level1">
 <h1>Time</h1>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>first_case_date <span class="ot">&lt;-</span> <span class="fu">ymd</span>(<span class="st">"2022-01-09"</span>)  <span class="co"># Date of first case</span></span>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>first_case_date <span class="ot">&lt;-</span> <span class="fu">ymd</span>(<span class="st">"2024-01-07"</span>)  <span class="co"># Date of first case</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>end_date <span class="ot">&lt;-</span> <span class="fu">ymd</span>(<span class="st">"2024-09-24"</span>)  <span class="co"># End date</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>duration <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(end_date <span class="sc">-</span> first_case_date)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>duration <span class="ot">&lt;-</span> duration<span class="sc">/</span><span class="dv">2</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>duration <span class="ot">&lt;-</span> duration<span class="sc">/</span><span class="dv">52</span></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>times <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, duration, <span class="at">by =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="solve-model" class="level1">
-<h1>solve model</h1>
+<h1>Solve model</h1>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>solution <span class="ot">&lt;-</span>  <span class="fu">lsoda</span>(</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">y=</span>initial_state,</span>
@@ -235,25 +232,30 @@ window.Quarto = {
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(solution) <span class="co">#convert to dataframe</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
+<section id="section" class="level1">
+<h1></h1>
+</section>
 <section id="plot" class="level1">
 <h1>Plot</h1>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>result_long <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(df, <span class="at">cols =</span> <span class="sc">-</span>time, <span class="at">names_to =</span> <span class="st">"Compartment"</span>, <span class="at">values_to =</span> <span class="st">"Population"</span>)</span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>result_long <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(df, <span class="at">cols =</span> <span class="sc">-</span>time , <span class="at">names_to =</span> <span class="st">"Compartment"</span>, <span class="at">values_to =</span> <span class="st">"Population"</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(result_long, <span class="fu">aes</span>(<span class="at">x =</span> time, </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>p<span class="ot">=</span><span class="fu">ggplot</span>(result_long, <span class="fu">aes</span>(<span class="at">x =</span> time, </span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">y =</span> Population, </span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">color =</span> Compartment)) <span class="sc">+</span></span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Time (days)"</span>, <span class="at">y =</span> <span class="st">"Number of individuals"</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Time (Weeks)"</span>, <span class="at">y =</span> <span class="st">"Number of individuals"</span>,</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"SEIR Model for MPOX in DRC"</span>,</span>
 <span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Figure 2: Dynamics of MPOX transmission in DRC"</span>) <span class="sc">+</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"S"</span> <span class="ot">=</span> <span class="st">"blue"</span>, </span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"Es"</span> <span class="ot">=</span> <span class="st">"black"</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>( <span class="st">"S"</span> <span class="ot">=</span> <span class="st">"blue"</span>,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"Es"</span> <span class="ot">=</span> <span class="st">"black"</span>,</span>
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"Ec"</span> <span class="ot">=</span> <span class="st">"grey"</span>,</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"Ea"</span> <span class="ot">=</span> <span class="st">"brown"</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"Ea"</span> <span class="ot">=</span> <span class="st">"yellow"</span>,</span>
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"I"</span> <span class="ot">=</span> <span class="st">"red"</span>, <span class="st">"R"</span> <span class="ot">=</span> <span class="st">"green"</span>)) <span class="sc">+</span></span>
 <span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">plot.caption =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="dv">0</span>, <span class="at">size =</span> <span class="dv">10</span>, <span class="at">face =</span> <span class="st">"italic"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">plot.caption =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="dv">0</span>, <span class="at">size =</span> <span class="dv">10</span>, <span class="at">face =</span> <span class="st">"italic"</span>))</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
