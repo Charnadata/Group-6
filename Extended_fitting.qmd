@@ -1,0 +1,244 @@
+---
+title: MPOX MODELLING
+author: Group 6
+---
+
+```{r setup, echo=FALSE }
+knitr::opts_chunk$set(
+  fig.cap = '',
+  fig.align = "center", 
+  message = FALSE,
+  warning = FALSE,
+  cache = FALSE,
+  echo = TRUE
+)
+```
+
+```{r libraries loading, echo=TRUE}
+library(deSolve)
+library(tidyverse) # loads other packages dplyr, ggplot2
+```
+
+# Introduction
+
+Lets
+
+-   S_y and S_a be Susceptible Observed Population, young and adult respectively
+
+-   E_as be Exposed observed Population through sexual contact, in the adult population
+
+-   E_yc and E_ac be Exposed Observed Population through contacts, young and adult respectively
+
+-   E_ya and E_aa be Exposed Observed Population through airborne, young and adult respectively
+
+-   R_y and R_a be Recovered observed Population
+
+![Figure 1: SEIR Model](images/clipboard-2237514110.png)
+
+# Assumptions
+
+-   No asymptomatic Population
+
+-   full immunity after recovery
+
+-   Same rate of infection
+
+-   constant population except death due to mpox
+
+-   Homogeneous mixing
+
+# Equations
+
+-   Susceptible (S): The rate of change of susceptible individuals is given by:
+
+    $\frac{dS}{dt} = -(\beta1 +\beta2 +\beta3) SI/N$
+
+-   Expose
+
+    -   $\frac{dEs}{dt} = \beta1 SI - \omega Es$
+
+-   $\frac{dEc}{dt} = \beta2 SI - \omega Ec$
+
+-   $\frac{dEa}{dt} = \beta3 SI - \omega Ea$
+
+-   Infectious (I): The rate of change of infectious individuals is given by:
+
+    $\frac{dI}{dt} = -(\beta1 + \beta2 + \beta3) SI - \lambda I -\theta I$
+
+-   Removed (R): The rate of change of recovered individuals is given by:
+
+    $\frac{dR}{dt} = \theta I$
+
+# Define the SEIR model with age structure
+
+```{r sir_model, echo=FALSE}
+seir_model <- function(time, state, parameters) { 
+with(as.list(c(state, parameters)), { 
+dS_y <- -(beta_yc + beta_ya) * S_y * (c_yy*(I_y/N_y) + c_ya*(I_a/N_a)) 
+dE_yc <- beta_yc * S_y * (c_yy*(I_y/N_y) + c_ya*(I_a/N_a)) - omega * E_yc
+dE_ya <- beta_ya * S_y * (c_yy*(I_y/N_y) + c_ya*(I_a/N_a)) - omega * E_ya
+dI_y <-  omega * (E_yc + E_ya ) - lambda_y * I_y - theta * I_y
+dR_y <- theta * I_y 
+
+dS_a <- -(beta_ac + beta_aa) * S_a * (c_ya*(I_y/N_y) + c_aa*(I_a/N_a)) - beta_as * S_a * (I_a / N_a) 
+dE_ac <- beta_ac * S_a * (c_ya*(I_y/N_y) + c_aa*(I_a/N_a)) - omega * E_ac
+dE_aa <- beta_aa * S_a * (c_ya*(I_y/N_y) + c_aa*(I_a/N_a)) - omega * E_aa
+dE_as <- beta_as * S_a * c_aa * (I_a/N_a) - omega * E_as
+dI_a <-  omega * (E_ac + E_aa + E_as) - lambda_a * I_a - theta * I_a
+dR_a <- theta * I_a 
+
+return(list(c(dS_y, dE_yc, dE_ya, dI_y, dR_y, dS_a, dE_ac, dE_aa, dE_as, dI_a, dR_a))) }) }
+```
+
+# Set parameters and initial states
+
+```{r parameters and initial states}
+
+N_y <- 44784600 * 0.4985 # Total young population
+N_a <- 44784600 * (1 - 0.4985) # Total adult population
+
+
+E_yc0 <- 0
+E_ya0 <- 0
+I_y0 <- 23 * 0.4985
+R_y0 <- 0
+S_y0 <- N_y - E_yc0 - E_ya0 - I_y0 - R_y0
+
+
+E_ac0 <- 0
+E_aa0 <- 0
+E_as0 <- 0
+I_a0 <-  23 * (1 - 0.4985)
+R_a0 <- 0
+S_a0 <-  N_a - E_ac0 - E_aa0 - E_as0 - I_a0 - R_a0
+
+
+#beta_yc <- 0.3 # Transmission rate by sexual contact
+#beta_ya <- 0.1 # Transmission rate by sexual contact
+#beta_ac <- 0.2 # Transmission rate by sexual contact
+#beta_aa <- 0.1 # Transmission rate by sexual contact
+#beta_as <- 0.5 # Transmission rate by sexual contact
+
+#c_ya <- 1
+#c_aa <- 0.5
+#c_yy <- 2
+    
+omega <- 1/7   # Infected rate from different transmission routes
+theta <- 1/14    # Recovery rate of infected individuals due to all other unreported causes
+lambda_y <- 1/I_y0  # death rate due the mpox i.e total death by total population 
+lambda_a <- 1/I_a0  # death rate due the mpox i.e total death by total population 
+```
+
+# Intial states
+
+```{r init_states, echo=FALSE}
+initial_state <- c(S_y = S_y0,
+                   E_yc = E_yc0,
+                   E_ya = E_ya0,
+                   I_y = I_y0,
+                   R_y = R_y0, 
+                   S_a = S_a0,
+                   E_ac = E_ac0,
+                   E_aa = E_aa0,
+                   E_as = E_as0,
+                   I_a = I_a0,
+                   R_a = R_a0)
+```
+
+# Plotting data
+
+```{r}
+
+data <- read.csv("~/Desktop/MPOX/Group-6/mpox_data.csv")
+data
+
+time_data <- data$Day
+observed_new_cases <- data$new_cases
+```
+
+```{r}
+diff_model <- function(par) {
+    
+    parameters <- c(
+                N_y = N_y, 
+                N_a = N_a, 
+                beta_yc = par[1],
+                beta_ya = par[2],
+                beta_ac = par[3],
+                beta_aa = par[4],
+                beta_as = par[5],
+                c_ya = par[6],
+                c_aa = par[7],
+                c_yy = par[8],
+                omega=omega,
+                theta=theta,
+                lambda_y=lambda_y,
+                lambda_a=lambda_a)
+    
+    time_data <-data$Day
+    
+    solution <-  lsoda(
+        y = initial_state,
+        time = time_data,
+        parms = parameters,
+        func = seir_model)
+    
+    df <- as.data.frame(solution) #convert to dataframe
+    results = (df$I_a + df$I_y)
+    return (results)
+}
+
+diff_value <- function (par) {
+    return (sum((diff_model(par) - observed_new_cases)^2))
+}
+```
+
+```{r}
+plot(time_data, observed_new_cases)
+#val = diff_model(0.3, 0.1, 0.2, 0.1, 0.5, 1, 0.5, 2)
+#val
+#plot(time_data, val)
+```
+
+
+```{r}
+# Define lower and upper bounds for the parameters
+lower_bounds <- c(beta_yc = 0, beta_ya = 0, beta_ac = 0, beta_aa = 0, beta_as = 0, c_ya = 0, c_aa = 0, c_yy = 0) #, rho_Id = 0.0001)
+upper_bounds <- c(beta_yc = 1, beta_ya = 1, beta_ac = 1, beta_aa = 1, beta_as = 1, c_ya = 1, c_aa = 1, c_yy = 1) #, rho_Id = 0.0001)
+
+# Fit the model using nls
+#c(0.3, 0.1, 0.2, 0.1, 0.5, 0.1, 0.5, 1)
+initial_guesses <- c(beta_yc = 1e-6, beta_ya = 1e-6, beta_ac = 1e-6, beta_aa = 1e-6, beta_as = 1e-5, c_ya = 1e-5, c_aa = 0.2, c_yy = 0.1) 
+
+fit <- optim(par = c(1e-6, 1e-6, 1e-6, 1e-6, 1e-5, 1e-5, 0.2, 0.1), diff_value, method = "L-BFGS-B", lower = lower_bounds, upper = upper_bounds, hessian = TRUE)
+fit
+```
+
+
+```{r}
+# Observe the results
+estimated <- fit$par
+estimated
+#val = diff_model(0.3, 0.1, 0.2, 0.1, 0.5, 1, 0.5, 2)
+final_prediction <- diff_model(estimated)
+
+plot(time_data, final_prediction)
+plot(time_data, observed_new_cases)
+#plot(time_data, val)
+```
+```{r}
+# Plot the first dataset
+plot(time_data, final_prediction, type = "l", col = "blue", lwd = 2, 
+     xlab = "Time", ylab = "Values", main = "Final Prediction vs Observed Cases")
+
+# Add the second dataset to the same plot
+lines(time_data, observed_new_cases, col = "red", lwd = 2)
+
+# Add a legend to distinguish between the two plots
+legend("topright", legend = c("Final Prediction", "Observed New Cases"), 
+       col = c("blue", "red"), lwd = 2)
+
+```
+
+
+
