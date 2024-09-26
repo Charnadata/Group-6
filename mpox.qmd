@@ -31,6 +31,8 @@ Let
 
 -   Ea be Exposed Observed Population through airborne
 
+-   I the infectious
+
 -   R be Recovered observed Population
 
 ![Figure 1: SEIR Model with Three Transmission Routes](images/clipboard-3807322046.png){fig-align="center"}
@@ -47,16 +49,57 @@ Let
 
 -   Homogeneous mixing
 
-# Define the SEIR model
+Initial conditions
 
-```{r sir_model, echo=FALSE}
-sir_model <- function(time, state, parameters) { 
+```{r}
+
+init <- c(S = 100, Es = 0, Ec = 0, Ea = 0, I = 0, R = 0)
+
+```
+
+Time span
+
+```{r}
+
+times <- seq(0, 40, by = 1) 
+
+```
+
+Differential equations
+
+```{r seir_model, echo=FALSE}
+seir_model <- function(time, state, parameters) { 
 with(as.list(c(state, parameters)), { 
 dS <- -(beta1 + beta2+ beta3) * S * I / N 
-dEs <- beta1*S*I/N - omega*Es
-dEc <- beta2*S*I/N - omega*Ec
-dEa <- beta3*S*I/N - omega*Ea
-dI <- beta * S * I / N - (v1 + v2) * I 
+dEs <- beta1*S*I/N - omega1*Es
+dEc <- beta2*S*I/N - omega1*Ec
+dEa <- beta3*S*I/N - omega3*Ea
+dI <- (beta1 + beta2 + beta3) * S * I / N - (v1 + v2) * I 
 dR <- (v1 + v2) * I 
-return(list(c(dS, dI, dR))) }) }
+return(list(c(dS, dEs, dEc, dEa, dI, dR))) }) }
+```
+
+Parameters
+
+```{r}
+
+parameters <- c(beta1 = 0.9, beta2 = 0.9, beta3 = 0.9, omega1 = 0.8, omega2 = 0.01, omega3 = 0.01,  gamma = 0.5, N = 100, v1 = 0.01, v2 = 0.01)
+```
+
+Output from the model
+
+```{r}
+
+init <- c(S = 100, Es = 0, Ec = 0, Ea = 0, I = 1, R = 0)
+out <- ode(y = init,  func = seir_model, times = times, parms = parameters)
+head(out) 
+```
+
+Plots
+
+```{r}
+plot(out[, "time"], out[, "S"], type = "l", lwd = 10, col = "green", xlab = "Time", ylab = "Number")
+lines(out[, "time"], out[, "I"], col = "red", lwd = 10)
+lines(out[, "time"], out[, "R"], col = "blue", lwd = 10)
+legend(25, 40000, c("Susceptibles", "Infected", "Recovered"), lwd = 10, lty = 1, col = 2:4) # Add legend and specific position
 ```
