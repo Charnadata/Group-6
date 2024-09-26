@@ -1,0 +1,206 @@
+---
+title: MPOX MODELLING WITH FITTING
+author: Group 6
+bibliography: references.bib
+---
+
+```{r setup, echo=FALSE }
+knitr::opts_chunk$set(
+  fig.cap = '',
+  fig.align = "center", 
+  message = FALSE,
+  warning = FALSE,
+  cache = FALSE,
+  echo = TRUE
+)
+```
+
+```{r libraries loading, echo=TRUE}
+library(deSolve)
+library(tidyverse) # loads other packages dplyr, ggplot2
+library(readxl)
+
+setwd("~/Group-6") # set working directory
+```
+
+# Introduction
+
+Lets
+
+-   S be Susceptible Observed Population
+
+-   Es be Exposed observed Population through sexual contact
+
+-   Ec be Exposed Observed Population through contacts
+
+-   Ea be Exposed Observed Population through airborne
+
+-   R be Recovered observed Population
+
+![Figure 1: SEIR Model](images/clipboard-2237514110.png)
+
+# Assumptions
+
+-   No asymptomatic Population
+
+-   full immunity after recovery
+
+-   Same rate of infection
+
+-   constant population except death due to mpox
+
+-   Homogeneous mixing
+
+# Equations
+
+-   Susceptible (S): The rate of change of susceptible individuals is given by:
+
+    $\frac{dS}{dt} = -(\beta1 +\beta2 +\beta3) SI/N$
+
+-   Expose
+
+    -   $\frac{dEs}{dt} = \beta1 SI - \omega Es$
+
+-   $\frac{dEc}{dt} = \beta2 SI - \omega Ec$
+
+-   $\frac{dEa}{dt} = \beta3 SI - \omega Ea$
+
+-   Infectious (I): The rate of change of infectious individuals is given by:
+
+    $\frac{dI}{dt} = -(\beta1 + \beta2 + \beta3) SI - \lambda I -\theta I$
+
+-   Removed (R): The rate of change of recovered individuals is given by:
+
+    $\frac{dR}{dt} = \theta I$
+
+# Define the SEIR model
+
+```{r sir_model, echo=FALSE}
+seir_model_f <- function(time, state, parameters) { 
+with(as.list(c(state, parameters)), { 
+dS <- -(beta1 + beta2+ beta3) * S * I / N 
+dEs <- beta1*S*I/N - omega*Es
+dEc <- beta2*S*I/N - omega*Ec
+dEa <- beta3*S*I/N - omega*Ea
+dI <- (omega*Es + omega*Ec + omega*Ea) - theta*I - lambda*I
+dR <- theta*I 
+return(list(c(dS, dEs, dEc, dEa, dI, dR))) }) }
+```
+
+## Defining the states and Parameters 
+
+1.  Pull mpox data for DRC
+
+```{r pull data, echo=FALSE}
+
+data <- read_csv("data/mpox_cases.xlsx - 1 January to 11 August 2024_WHO.csv")
+attach(data) # attach variables for easy callout
+
+initial_case <- as.numeric(new_cases[7]) #reported on the 7th day
+initial_exposed <- initial_case # assuming equal to initial infected
+tcases <- as.numeric(max(total_cases))
+death <- as.numeric(max(total_deaths))
+```
+
+2.  define initial states from the data
+
+    ```{r define initial states}
+    N= 10000
+    I0 <- initial_case
+    Es0 <- 5
+    Ec0 <- 15
+    Ea0 <- 6
+    R0 <- 0
+    S0 <- N - I0 - R0 - Es0 - Ec0 - Ea0
+    ```
+
+3.  define the parameters
+
+    Reproduction number is 0.89 [@charniga2024]
+
+    ```{r define parameters}
+    Repro_num = 0.89
+    theta <- 1/14 #duration of recovery is estimated at 14 days
+    beta <-  Repro_num * theta
+    beta1 <-  0.3*beta
+    beta2 <- 0.5*beta
+    beta3 <- 0.2*beta
+    omega <-  1/10 # average incubation period is 10days (6-13 days)
+    lambda <- death/I0
+    ```
+
+# Connencting it to the Model
+
+## Initial states
+```{r init_states, echo=FALSE}
+initial_state_f <- c(S = S0,
+                   Es = Es0,
+                   Ec= Ec0,
+                   Ea= Ea0,
+                   I = I0, 
+                   R = R0)
+```
+
+## Parameters
+
+```{r parameters, echo=FALSE}
+parameters_f <- c(N = N, 
+                beta1 = beta1,
+                beta2=beta2,
+                beta3=beta3,
+                omega=omega,
+                theta=theta,
+                lambda=lambda)
+```
+
+## Time
+
+```{r}
+first_case_date_f <- ymd("2024-01-01")  # Date of first case
+end_date_f <- ymd("2024-08-11")  # End date
+
+duration_f <- as.numeric(end_date_f - first_case_date_f)
+duration_f <- duration_f
+
+times_f <- seq(0, duration_f, by = 1)
+```
+
+# Solve model
+
+```{r model solution}
+
+solution_f <-  lsoda(
+  y=initial_state_f,
+  time=times_f,
+  parms = parameters_f,
+  func = seir_model_f
+)
+
+df_f <- as.data.frame(solution_f) #convert to dataframe
+```
+
+# 
+
+# Plot
+```{r graph, echo=TRUE}
+result_long_f <- pivot_longer(df_f, cols = -time , names_to = "Compartment", values_to = "Population")
+
+q=ggplot(result_long_f, aes(x = time, 
+                        y = Population, 
+                        color = Compartment)) +
+  geom_line() +
+  labs(x = "Time (Days)", y = "Number of individuals",
+       title = "SEIR Model Fitting for MPOX in DRC",
+       caption = "Figure 2: Dynamics of MPOX transmission in DRC") +
+  scale_color_manual(values = c( "S" = "blue",
+                                 "Es" = "black",
+                                "Ec" = "grey",
+                                "Ea" = "yellow",
+                                "I" = "red", "R" = "green")) +
+  theme_minimal()+
+    theme(plot.caption = element_text(hjust = 0, size = 10, face = "italic"))
+
+q
+```
+
+
